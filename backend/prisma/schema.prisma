@@ -1,0 +1,45 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("AZURE_COSMOS_PG_CONNECTION_STRING")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model evUser {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  name      String
+  email     String   @unique
+  password  String
+  rating    rating[]
+}
+
+model evStation {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  name        String
+  state       String?
+  city        String?
+  address     String?
+  latitude    Float
+  longitude   Float
+  type        Int      @default(12)
+  description String   @default("No description yet, add reviews!")
+  rating      rating[]
+}
+
+// each user can rate a station once only
+model rating {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  userId      Int
+  stationId   Int
+  rating      Float
+  review      String?
+  user        evUser    @relation(fields: [userId], references: [id])
+  station     evStation @relation(fields: [stationId], references: [id])
+
+  @@unique([userId, stationId], name: "userIdStationId")  // make userId + stationId unique
+}
